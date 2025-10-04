@@ -122,7 +122,7 @@
             display: none;
         }
 
-        .download-card-btn {
+        .download-card-btn, .view-all-btn {
             background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
             color: white;
             border: none;
@@ -131,12 +131,23 @@
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
+            margin: 5px;
             transition: transform 0.2s;
+            text-decoration: none;
+            display: inline-block;
         }
 
-        .download-card-btn:hover {
+        .view-all-btn {
+            background: linear-gradient(45deg, #45b7d1, #667eea);
+        }
+
+        .download-card-btn:hover, .view-all-btn:hover {
             transform: translateY(-1px);
+        }
+
+        .action-buttons {
+            margin-top: 10px;
+            text-align: center;
         }
 
         .card-canvas {
@@ -206,9 +217,14 @@
         <div class="success-message" id="successMessage">
             <strong>Wish submitted successfully!</strong><br>
             Your wish is now displayed on the big screen. Thank you for participating!
-            <br><button class="download-card-btn" id="downloadCardBtn" onclick="downloadWishCard()">
-                Download LH Future Wish Card
-            </button>
+            <div class="action-buttons">
+                <button class="download-card-btn" id="downloadCardBtn" onclick="downloadWishCard()">
+                    Download LH Future Wish Card
+                </button>
+                <a href="/display" class="view-all-btn" target="_blank">
+                    View All Wishes
+                </a>
+            </div>
         </div>
         
         <div class="error-message" id="errorMessage">
@@ -404,6 +420,12 @@
             ctx.font = '14px Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(`Time: ${currentWishData.time}`, 300, 350);
+            
+            // 添加Lighthouse Slogan
+            ctx.font = '12px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.fillText('Light up your life and career; make you outstanding everywhere.', 300, 360);
             
             // 添加底部装饰
             ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';

@@ -253,6 +253,188 @@ app.delete('/api/admin/wishes/:id', async (req, res) => {
     }
 });
 
+// 导入愿望数据（管理员功能）
+app.post('/api/admin/import-wishes', async (req, res) => {
+    try {
+        const { wishes: importedWishes } = req.body;
+        
+        if (!Array.isArray(importedWishes)) {
+            return res.status(400).json({ error: '数据格式错误' });
+        }
+        
+        // 验证导入的数据格式
+        for (const wish of importedWishes) {
+            if (!wish.name || !wish.wish || !wish.timestamp) {
+                return res.status(400).json({ error: '数据格式不完整' });
+            }
+        }
+        
+        // 为导入的数据生成新的ID（如果没有ID的话）
+        const processedWishes = importedWishes.map(wish => ({
+            ...wish,
+            id: wish.id || Date.now() + Math.random().toString(36).substr(2, 9)
+        }));
+        
+        // 合并数据
+        wishes = [...wishes, ...processedWishes];
+        
+        await saveData();
+        
+        res.json({ 
+            success: true, 
+            message: `成功导入 ${processedWishes.length} 个愿望`,
+            total: wishes.length
+        });
+        
+        console.log(`导入了 ${processedWishes.length} 个愿望，当前总数: ${wishes.length}`);
+        
+    } catch (error) {
+        console.error('导入愿望失败:', error);
+        res.status(500).json({ error: '导入失败' });
+    }
+});
+
+// 清空所有愿望数据（管理员功能）
+app.delete('/api/admin/clear-wishes', async (req, res) => {
+    try {
+        const originalCount = wishes.length;
+        wishes = [];
+        
+        await saveData();
+        
+        res.json({ 
+            success: true, 
+            message: `已清空 ${originalCount} 个愿望`,
+            total: 0
+        });
+        
+        console.log(`管理员清空了所有数据，原有 ${originalCount} 个愿望`);
+        
+    } catch (error) {
+        console.error('清空愿望失败:', error);
+        res.status(500).json({ error: '清空失败' });
+    }
+});
+
+// 批量下载愿望卡片（管理员功能）
+app.post('/api/admin/download-cards', async (req, res) => {
+    try {
+        if (wishes.length === 0) {
+            return res.status(400).json({ error: '没有愿望数据' });
+        }
+        
+        const archiver = require('archiver');
+        const { createCanvas } = require('canvas');
+        
+        // 设置响应头
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename=lighthouse_wish_cards_${new Date().toISOString().split('T')[0]}.zip`);
+        
+        // 创建zip压缩包
+        const archive = archiver('zip', {
+            zlib: { level: 9 }
+        });
+        
+        archive.pipe(res);
+        
+        // 为每个愿望生成卡片
+        for (let i = 0; i < wishes.length; i++) {
+            const wish = wishes[i];
+            const canvas = createCanvas(600, 400);
+            const ctx = canvas.getContext('2d');
+            
+            // 设置卡片背景
+            const gradient = ctx.createLinearGradient(0, 0, 600, 400);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 600, 400);
+            
+            // 添加星空效果
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            for (let j = 0; j < 50; j++) {
+                const x = Math.random() * 600;
+                const y = Math.random() * 400;
+                const radius = Math.random() * 2;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // 添加标题
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Lighthouse 18th Birthday', 300, 60);
+            
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText('Future Wish Card', 300, 90);
+            
+            // 添加姓名
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText(`Name: ${wish.name}`, 300, 140);
+            
+            // 添加愿望内容（自动换行）
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'left';
+            const maxWidth = 500;
+            const lineHeight = 25;
+            const words = wish.wish.split('');
+            let line = '';
+            let y = 180;
+            
+            ctx.fillText('Wish:', 50, 160);
+            
+            for (let k = 0; k < words.length; k++) {
+                const testLine = line + words[k];
+                const metrics = ctx.measureText(testLine);
+                const testWidth = metrics.width;
+                if (testWidth > maxWidth && k > 0) {
+                    ctx.fillText(line, 50, y);
+                    line = words[k];
+                    y += lineHeight;
+                    if (y > 320) break; // 防止文字超出卡片
+                } else {
+                    line = testLine;
+                }
+            }
+            if (y <= 320) {
+                ctx.fillText(line, 50, y);
+            }
+            
+            // 添加时间
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Time: ${new Date(wish.timestamp).toLocaleString()}`, 300, 350);
+            
+            // 添加Lighthouse Slogan
+            ctx.font = '12px Arial';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.fillText('Light up your life and career; make you outstanding everywhere.', 300, 370);
+            
+            // 添加底部装饰
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillText('✨ Living Upward · 向上生活 ✨', 300, 390);
+            
+            // 添加到zip包
+            const buffer = canvas.toBuffer('image/png');
+            const fileName = `wish_card_${i + 1}_${wish.name.replace(/[^\w\s]/gi, '').substring(0, 20)}.png`;
+            archive.append(buffer, { name: fileName });
+        }
+        
+        // 完成zip包
+        archive.finalize();
+        
+        console.log(`生成了 ${wishes.length} 个愿望卡片的zip包`);
+        
+    } catch (error) {
+        console.error('生成卡片失败:', error);
+        if (!res.headersSent) {
+            res.status(500).json({ error: '生成卡片失败' });
+        }
+    }
+});
+
 // 路由处理
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
