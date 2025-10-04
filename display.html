@@ -288,6 +288,169 @@
         .wishes-panel::-webkit-scrollbar-thumb:hover {
             background: rgba(78, 205, 196, 0.7);
         }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 32px;
+            }
+
+            .subtitle {
+                font-size: 18px;
+            }
+
+            .header {
+                padding: 15px;
+            }
+
+            .stats {
+                top: 10px;
+                right: 10px;
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .stats-number {
+                font-size: 24px;
+            }
+
+            .latest-wish-info {
+                top: 80px;
+                right: 10px;
+                padding: 10px;
+                max-width: 150px;
+            }
+
+            .latest-wish-number {
+                font-size: 18px;
+            }
+
+            /* 手机端改为垂直布局 */
+            .main-content {
+                flex-direction: column;
+                height: auto;
+                min-height: calc(100vh - 120px);
+            }
+
+            .wishes-panel {
+                flex: none;
+                height: 50vh;
+                margin: 10px;
+                order: 2;
+            }
+
+            .wordcloud-panel {
+                flex: none;
+                height: 40vh;
+                margin: 10px;
+                order: 1;
+            }
+
+            .section-title {
+                font-size: 22px;
+                margin-bottom: 15px;
+            }
+
+            #wordcloud {
+                width: 100%;
+                max-width: 350px;
+                height: 250px;
+            }
+
+            .wish-item {
+                padding: 15px;
+                margin-bottom: 10px;
+            }
+
+            .wish-name {
+                font-size: 16px;
+            }
+
+            .wish-content {
+                font-size: 14px;
+            }
+
+            .wish-number {
+                width: 25px;
+                height: 25px;
+                font-size: 10px;
+            }
+
+            /* 优化滚动 */
+            body {
+                overflow-y: auto;
+            }
+
+            .wishes-panel {
+                max-height: 50vh;
+                overflow-y: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 10px;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+            }
+
+            .stats {
+                padding: 8px;
+            }
+
+            .stats-number {
+                font-size: 20px;
+            }
+
+            .latest-wish-info {
+                padding: 8px;
+                max-width: 120px;
+            }
+
+            .main-content {
+                margin: 0;
+            }
+
+            .wishes-panel,
+            .wordcloud-panel {
+                margin: 5px;
+                border-radius: 10px;
+            }
+
+            .wishes-panel {
+                height: 45vh;
+            }
+
+            .wordcloud-panel {
+                height: 35vh;
+            }
+
+            #wordcloud {
+                max-width: 300px;
+                height: 200px;
+            }
+
+            .section-title {
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+
+            .wish-item {
+                padding: 12px;
+                margin-bottom: 8px;
+            }
+
+            .wish-content {
+                font-size: 13px;
+                line-height: 1.4;
+            }
+        }
     </style>
 </head>
 <body>
