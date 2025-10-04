@@ -333,9 +333,10 @@
             errorMessage.style.display = 'none';
             successMessage.style.display = 'block';
             
-            setTimeout(() => {
-                successMessage.style.display = 'none';
-            }, 3000);
+            // 移除自动隐藏，让用户可以持续看到按钮
+            // setTimeout(() => {
+            //     successMessage.style.display = 'none';
+            // }, 3000);
         }
         
         function showError(message) {
