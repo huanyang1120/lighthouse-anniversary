@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lighthouse 18周年庆 - 未来约定</title>
+    <title>Lighthouse 18th Birthday Wish</title>
     <style>
         * {
             margin: 0;
@@ -122,6 +122,30 @@
             display: none;
         }
 
+        .download-card-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .download-card-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .card-canvas {
+            position: fixed;
+            top: -1000px;
+            left: -1000px;
+            z-index: -1;
+        }
+
         .error-message {
             background: #f44336;
             color: white;
@@ -155,72 +179,120 @@
 <body>
     <div class="container">
         <div class="logo">L</div>
-        <h1>未来约定</h1>
-        <p class="subtitle">Lighthouse 18周年庆 · 向上生活</p>
+        <h1>Future Wish</h1>
+        <p class="subtitle">Lighthouse 18th Birthday · Living Upward</p>
         
         <form id="wishForm">
             <div class="form-group">
-                <label for="name">您的姓名</label>
-                <input type="text" id="name" name="name" required placeholder="请输入您的姓名">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" required placeholder="Please enter your name">
             </div>
             
             <div class="form-group">
-                <label for="wish">向上生活的约定</label>
-                <textarea id="wish" name="wish" required placeholder="分享您对未来的美好约定和祝福..."></textarea>
+                <label for="wish">Your Upward Living Wish</label>
+                <textarea id="wish" name="wish" required placeholder="Share your beautiful wishes and blessings for the future..."></textarea>
             </div>
             
             <button type="submit" class="submit-btn" id="submitBtn">
-                许下约定
+                Make a Wish
             </button>
         </form>
         
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>正在提交您的约定...</p>
+            <p>Submitting your wish...</p>
         </div>
         
         <div class="success-message" id="successMessage">
-            <strong>约定提交成功！</strong><br>
-            您的约定已显示在大屏幕上，感谢参与！
+            <strong>Wish submitted successfully!</strong><br>
+            Your wish is now displayed on the big screen. Thank you for participating!
+            <br><button class="download-card-btn" id="downloadCardBtn" onclick="downloadWishCard()">
+                Download LH Future Wish Card
+            </button>
         </div>
         
         <div class="error-message" id="errorMessage">
-            提交失败，请重试
+            Submission failed, please try again
         </div>
     </div>
 
+    <canvas id="cardCanvas" class="card-canvas" width="600" height="400"></canvas>
+
     <script>
+        let currentWishData = null;
+        // 防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 请求防重复提交
+        let isSubmitting = false;
+
         document.getElementById('wishForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // 防止重复提交
+            if (isSubmitting) {
+                return;
+            }
             
             const name = document.getElementById('name').value.trim();
             const wish = document.getElementById('wish').value.trim();
             
             if (!name || !wish) {
-                showError('请填写完整信息');
+                showError('Please fill in all information');
                 return;
             }
             
+            isSubmitting = true;
             showLoading(true);
             
             try {
+                // 设置超时时间为10秒
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
                 const response = await fetch('/api/submit-wish', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ name, wish })
+                    body: JSON.stringify({ name, wish }),
+                    signal: controller.signal
                 });
                 
+                clearTimeout(timeoutId);
+                
                 if (response.ok) {
+                    // 保存当前愿望数据用于生成卡片
+                    currentWishData = {
+                        name: name,
+                        wish: wish,
+                        time: new Date().toLocaleString()
+                    };
                     showSuccess();
                     document.getElementById('wishForm').reset();
                 } else {
-                    throw new Error('提交失败');
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'Submission failed');
                 }
             } catch (error) {
-                showError('提交失败，请重试');
+                if (error.name === 'AbortError') {
+                    showError('Request timeout, please try again');
+                } else {
+                    showError('Submission failed, please try again');
+                }
+                console.error('Submission error:', error);
             } finally {
+                isSubmitting = false;
                 showLoading(false);
             }
         });
@@ -261,6 +333,87 @@
             setTimeout(() => {
                 errorMessage.style.display = 'none';
             }, 3000);
+        }
+
+        function downloadWishCard() {
+            if (!currentWishData) {
+                showError('No wish data available');
+                return;
+            }
+
+            const canvas = document.getElementById('cardCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置卡片背景
+            const gradient = ctx.createLinearGradient(0, 0, 600, 400);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 600, 400);
+            
+            // 添加星空效果
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * 600;
+                const y = Math.random() * 400;
+                const radius = Math.random() * 2;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // 添加标题
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 32px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Lighthouse 18th Birthday', 300, 60);
+            
+            ctx.font = 'bold 24px Arial, sans-serif';
+            ctx.fillText('Future Wish Card', 300, 90);
+            
+            // 添加姓名
+            ctx.font = 'bold 20px Arial, sans-serif';
+            ctx.fillText(`Name: ${currentWishData.name}`, 300, 140);
+            
+            // 添加愿望内容（自动换行）
+            ctx.font = '16px Arial, sans-serif';
+            ctx.textAlign = 'left';
+            const maxWidth = 500;
+            const lineHeight = 25;
+            const words = currentWishData.wish.split(' ');
+            let line = '';
+            let y = 180;
+            
+            ctx.fillText('Wish:', 50, 160);
+            
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                const metrics = ctx.measureText(testLine);
+                const testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    ctx.fillText(line, 50, y);
+                    line = words[n] + ' ';
+                    y += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, 50, y);
+            
+            // 添加时间
+            ctx.font = '14px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Time: ${currentWishData.time}`, 300, 350);
+            
+            // 添加底部装饰
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillText('✨ Living Upward · 向上生活 ✨', 300, 380);
+            
+            // 下载图片
+            const link = document.createElement('a');
+            link.download = `LH_Future_Wish_Card_${currentWishData.name.replace(/\s+/g, '_')}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
         }
     </script>
 </body>

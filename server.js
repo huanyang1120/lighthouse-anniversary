@@ -86,22 +86,44 @@ app.get('/api/wishes', (req, res) => {
     res.json(wishes);
 });
 
+// 请求限制 - 防止短时间内重复提交
+const submissionCache = new Map();
+
 // 提交新约定
 app.post('/api/submit-wish', async (req, res) => {
     try {
         const { name, wish } = req.body;
+        const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
         
         // 验证输入
         if (!name || !wish) {
-            return res.status(400).json({ error: '姓名和约定不能为空' });
+            return res.status(400).json({ error: 'Name and wish cannot be empty' });
         }
         
         if (name.length > 50) {
-            return res.status(400).json({ error: '姓名不能超过50个字符' });
+            return res.status(400).json({ error: 'Name cannot exceed 50 characters' });
         }
         
         if (wish.length > 500) {
-            return res.status(400).json({ error: '约定不能超过500个字符' });
+            return res.status(400).json({ error: 'Wish cannot exceed 500 characters' });
+        }
+        
+        // 防止短时间内重复提交（5秒内同一IP只能提交一次）
+        const cacheKey = `${clientIP}_${name.trim()}`;
+        const lastSubmission = submissionCache.get(cacheKey);
+        const now = Date.now();
+        
+        if (lastSubmission && (now - lastSubmission) < 5000) {
+            return res.status(429).json({ error: 'Please wait before submitting again' });
+        }
+        
+        submissionCache.set(cacheKey, now);
+        
+        // 清理过期的缓存（保留最近10分钟的记录）
+        for (const [key, timestamp] of submissionCache.entries()) {
+            if (now - timestamp > 600000) { // 10分钟
+                submissionCache.delete(key);
+            }
         }
         
         // 创建新约定对象
@@ -110,29 +132,33 @@ app.post('/api/submit-wish', async (req, res) => {
             name: name.trim(),
             wish: wish.trim(),
             timestamp: new Date().toISOString(),
-            ip: req.ip || req.connection.remoteAddress
+            ip: clientIP
         };
         
         // 添加到约定列表
         wishes.push(newWish);
         
-        // 保存到文件
-        await saveData();
+        // 异步保存到文件（不阻塞响应）
+        saveData().catch(error => {
+            console.error('异步保存数据失败:', error);
+        });
         
-        // 广播给所有连接的客户端
-        broadcastNewWish(newWish);
+        // 异步广播给所有连接的客户端（不阻塞响应）
+        setImmediate(() => {
+            broadcastNewWish(newWish);
+        });
         
         console.log(`收到新约定: ${newWish.name} - ${newWish.wish.substring(0, 50)}...`);
         
         res.json({ 
             success: true, 
-            message: '约定提交成功',
+            message: 'Wish submitted successfully',
             id: newWish.id
         });
         
     } catch (error) {
         console.error('提交约定失败:', error);
-        res.status(500).json({ error: '服务器内部错误' });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 

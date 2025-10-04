@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lighthouse 18周年庆 - 大屏展示</title>
+    <title>Lighthouse 18th Birthday Wish - Display</title>
     <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
     <style>
         * {
@@ -65,6 +65,8 @@
             align-items: center;
             justify-content: center;
             margin: 20px;
+            position: relative;
+            overflow: hidden;
         }
 
         .section-title {
@@ -84,6 +86,7 @@
             border-left: 4px solid #4ecdc4;
             animation: fadeInUp 0.6s ease-out;
             transition: transform 0.3s ease;
+            position: relative;
         }
 
         .wish-item:hover {
@@ -114,12 +117,84 @@
             text-align: right;
         }
 
+        .wish-number {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4ecdc4;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .latest-wish-info {
+            position: absolute;
+            top: 120px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 200px;
+        }
+
+        .latest-wish-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .latest-wish-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
         #wordcloud {
             width: 500px;
             height: 400px;
             border-radius: 15px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(5px);
+            transition: transform 3s ease-out, opacity 3s ease-out;
+        }
+
+        .starfield {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 3s ease-in;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .wordcloud-fade-out {
+            transform: scale(0.1) !important;
+            opacity: 0 !important;
+        }
+
+        .starfield-visible {
+            opacity: 1 !important;
         }
 
         .stats {
@@ -219,26 +294,32 @@
     <div class="floating-particles" id="particles"></div>
     
     <div class="header">
-        <div class="title">Lighthouse 18周年庆</div>
-        <div class="subtitle">未来约定 · 向上生活</div>
+        <div class="title">Lighthouse 18th Birthday</div>
+        <div class="subtitle">Future Wish · Living Upward</div>
     </div>
 
     <div class="stats">
         <div class="stats-number" id="wishCount">0</div>
-        <div class="stats-label">个约定</div>
+        <div class="stats-label">wishes</div>
+    </div>
+
+    <div class="latest-wish-info">
+        <div class="latest-wish-label">Latest Wish #</div>
+        <div class="latest-wish-number" id="latestWishNumber">0</div>
     </div>
 
     <div class="main-content">
         <div class="wishes-panel">
-            <div class="section-title">最新约定</div>
+            <div class="section-title">Latest Wishes</div>
             <div id="wishesContainer">
                 <!-- 约定列表将在这里显示 -->
             </div>
         </div>
 
         <div class="wordcloud-panel">
-            <div class="section-title">约定词云</div>
+            <div class="section-title">Wish Cloud</div>
             <canvas id="wordcloud"></canvas>
+            <div class="starfield" id="starfield"></div>
         </div>
     </div>
 
@@ -301,8 +382,10 @@
             updateDisplay() {
                 const container = document.getElementById('wishesContainer');
                 const countElement = document.getElementById('wishCount');
+                const latestWishNumberElement = document.getElementById('latestWishNumber');
                 
                 countElement.textContent = this.wishes.length;
+                latestWishNumberElement.textContent = this.wishes.length;
                 
                 // 清空容器
                 container.innerHTML = '';
@@ -325,7 +408,13 @@
                     minute: '2-digit'
                 });
                 
+                // 计算愿望序号（基于在数组中的位置）
+                const wishIndex = this.wishes.findIndex(w => w.id === wish.id || 
+                    (w.name === wish.name && w.timestamp === wish.timestamp));
+                const wishNumber = wishIndex + 1;
+                
                 wishDiv.innerHTML = `
+                    <div class="wish-number">#${wishNumber}</div>
                     <div class="wish-name">${this.escapeHtml(wish.name)}</div>
                     <div class="wish-content">${this.escapeHtml(wish.wish)}</div>
                     <div class="wish-time">${timeStr}</div>
@@ -348,14 +437,33 @@
 
             analyzeWords() {
                 const frequency = {};
-                const stopWords = new Set(['的', '在', '和', '是', '我', '了', '有', '就', '都', '会', '说', '他', '她', '它', '这', '那', '一个', '能够', '可以', '希望', '愿望', '祝福']);
+                const chineseStopWords = new Set(['的', '在', '和', '是', '我', '了', '有', '就', '都', '会', '说', '他', '她', '它', '这', '那', '一个', '能够', '可以', '希望', '愿望', '祝福', '为了', '因为', '所以', '但是', '如果', '虽然', '然而', '而且', '或者', '并且']);
+                const englishStopWords = new Set(['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'among', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'shall', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their']);
                 
                 this.wishes.forEach(wish => {
-                    // 简单的中文分词（这里只是基础实现）
-                    const words = wish.wish.match(/[\u4e00-\u9fa5]{2,}/g) || [];
+                    const text = wish.wish.toLowerCase();
                     
-                    words.forEach(word => {
-                        if (!stopWords.has(word) && word.length >= 2) {
+                    // 提取中文词语（2个字符以上）
+                    const chineseWords = text.match(/[\u4e00-\u9fa5]{2,}/g) || [];
+                    chineseWords.forEach(word => {
+                        if (!chineseStopWords.has(word) && word.length >= 2) {
+                            frequency[word] = (frequency[word] || 0) + 1;
+                        }
+                    });
+                    
+                    // 提取英文单词（3个字符以上）
+                    const englishWords = text.match(/[a-zA-Z]{3,}/g) || [];
+                    englishWords.forEach(word => {
+                        const lowerWord = word.toLowerCase();
+                        if (!englishStopWords.has(lowerWord) && lowerWord.length >= 3) {
+                            frequency[lowerWord] = (frequency[lowerWord] || 0) + 1;
+                        }
+                    });
+                    
+                    // 提取其他语言的词语（包括韩文、日文等，3个字符以上）
+                    const otherWords = text.match(/[\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF\u0400-\u04FF\u0100-\u017F\u1E00-\u1EFF]{3,}/g) || [];
+                    otherWords.forEach(word => {
+                        if (word.length >= 3) {
                             frequency[word] = (frequency[word] || 0) + 1;
                         }
                     });
@@ -389,6 +497,53 @@
                     minSize: 12,
                     drawOutOfBound: false
                 });
+
+                // 如果愿望数量达到一定阈值，触发消失动画
+                if (this.wishes.length >= 10) {
+                    setTimeout(() => {
+                        this.triggerWordCloudDisappear();
+                    }, 5000);
+                }
+            }
+
+            createStarfield() {
+                const starfield = document.getElementById('starfield');
+                starfield.innerHTML = '';
+                
+                // 创建100颗星星
+                for (let i = 0; i < 100; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 100 + '%';
+                    star.style.width = (Math.random() * 3 + 1) + 'px';
+                    star.style.height = star.style.width;
+                    star.style.animationDelay = Math.random() * 2 + 's';
+                    star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    starfield.appendChild(star);
+                }
+            }
+
+            triggerWordCloudDisappear() {
+                const wordcloud = document.getElementById('wordcloud');
+                const starfield = document.getElementById('starfield');
+                
+                // 创建星空
+                this.createStarfield();
+                
+                // 添加消失动画类
+                wordcloud.classList.add('wordcloud-fade-out');
+                
+                // 显示星空
+                setTimeout(() => {
+                    starfield.classList.add('starfield-visible');
+                }, 1000);
+                
+                // 3秒后恢复词云（可选）
+                setTimeout(() => {
+                    wordcloud.classList.remove('wordcloud-fade-out');
+                    starfield.classList.remove('starfield-visible');
+                }, 8000);
             }
 
             setupWordCloud() {
