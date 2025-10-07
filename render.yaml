@@ -1,17 +1,12 @@
 services:
   - type: web
     name: lighthouse-anniversary
-    env: node
-    repo: https://github.com/huanyang1120/lighthouse-anniversary.git
-    buildCommand: npm install
+    runtime: node
+    buildCommand: npm ci
     startCommand: npm start
+    healthCheckPath: /api/wishes
     plan: free
     region: singapore
-    branch: main
-    healthCheckPath: /api/wishes
     envVars:
       - key: NODE_ENV
         value: production
-    scaling:
-      minInstances: 1
-      maxInstances: 1
