@@ -190,8 +190,11 @@
 <body>
     <div class="container">
         <div class="logo">L</div>
-        <h1>Future Wish</h1>
-        <p class="subtitle">Lighthouse 18th Birthday · Living Upward</p>
+        <h1 style="color: #4A90E2; font-size: 24px; margin-bottom: 15px; font-weight: bold;">
+            Lighthouse 18th Birthday<br>
+            Future Wish
+        </h1>
+        <p class="subtitle">Living Upward</p>
         
         <form id="wishForm">
             <div class="form-group">
@@ -292,7 +295,15 @@
                     currentWishData = {
                         name: name,
                         wish: wish,
-                        time: new Date().toLocaleString()
+                        time: new Date().toLocaleString('zh-CN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false
+                        })
                     };
                     showSuccess();
                     document.getElementById('wishForm').reset();
@@ -361,82 +372,250 @@
             const canvas = document.getElementById('cardCanvas');
             const ctx = canvas.getContext('2d');
             
-            // 设置卡片背景
-            const gradient = ctx.createLinearGradient(0, 0, 600, 400);
-            gradient.addColorStop(0, '#667eea');
-            gradient.addColorStop(1, '#764ba2');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, 600, 400);
+            // 设置手机满屏 9:16 尺寸 (例: 540x960)
+            canvas.width = 540;
+            canvas.height = 960;
             
-            // 添加星空效果
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            for (let i = 0; i < 50; i++) {
-                const x = Math.random() * 600;
-                const y = Math.random() * 400;
-                const radius = Math.random() * 2;
+            // 创建深色星空背景
+            const gradient = ctx.createRadialGradient(270, 480, 0, 270, 480, 600);
+            gradient.addColorStop(0, '#0f0f23');
+            gradient.addColorStop(0.5, '#16213e');
+            gradient.addColorStop(1, '#1a1a2e');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 540, 960);
+            
+            // 添加更丰富的星空效果
+            drawStarField(ctx, 540, 960);
+            
+            // 添加淡淡的灯塔背景图案
+            drawLighthouseBackground(ctx, 270, 480);
+            
+            // 在顶部添加标题
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 32px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Lighthouse 18th Birthday', 270, 80);
+            ctx.fillText('Future Wish Card', 270, 120);
+            
+            // 添加 Lighthouse logo
+            drawLighthouseLogo(ctx, 270, 180);
+            
+            // 明信片样式开头 "To [姓名]"
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '28px Brush Script MT, cursive';
+            ctx.textAlign = 'left';
+            ctx.fillText(`To ${currentWishData.name},`, 40, 260);
+            
+            // 愿望内容 - 使用手写体，放在中间区域
+            ctx.fillStyle = '#f0f0f0';
+            ctx.font = '24px Brush Script MT, cursive';
+            ctx.textAlign = 'left';
+            
+            // 自动换行处理愿望内容
+            const wishLines = wrapText(ctx, currentWishData.wish, 460, 24);
+            const startY = 320;
+            wishLines.forEach((line, index) => {
+                ctx.fillText(line, 40, startY + (index * 40));
+            });
+            
+            // 右下角添加日期和时间（包含时分秒）
+            ctx.fillStyle = '#d0d0d0';
+            ctx.font = '18px Georgia, serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(currentWishData.time, 500, 850);
+            
+            // 底部装饰 - Lighthouse 标语
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.font = '16px Georgia, serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Light up your life and career', 270, 890);
+            ctx.fillText('✨ Living Upward · 向上生活 ✨', 270, 920);
+            
+            // 下载图片
+            const link = document.createElement('a');
+            link.download = `Lighthouse_18th_Wish_Card_${currentWishData.name.replace(/\s+/g, '_')}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // 绘制星空效果
+        function drawStarField(ctx, width, height) {
+            // 大星星
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            for (let i = 0; i < 30; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const radius = Math.random() * 2 + 1;
                 ctx.beginPath();
                 ctx.arc(x, y, radius, 0, Math.PI * 2);
                 ctx.fill();
             }
             
-            // 添加标题
+            // 中等星星
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const radius = Math.random() * 1.5 + 0.5;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // 小星星
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            for (let i = 0; i < 80; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const radius = Math.random() * 1;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // 添加一些闪烁的星星效果
+            ctx.fillStyle = 'rgba(255, 255, 200, 0.8)';
+            for (let i = 0; i < 15; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                drawStar(ctx, x, y, 3, 6, 1.5);
+            }
+        }
+        
+        // 绘制星形
+        function drawStar(ctx, x, y, spikes, outerRadius, innerRadius) {
+            let rot = Math.PI / 2 * 3;
+            let step = Math.PI / spikes;
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y - outerRadius);
+            
+            for (let i = 0; i < spikes; i++) {
+                ctx.lineTo(x + Math.cos(rot) * outerRadius, y + Math.sin(rot) * outerRadius);
+                rot += step;
+                ctx.lineTo(x + Math.cos(rot) * innerRadius, y + Math.sin(rot) * innerRadius);
+                rot += step;
+            }
+            
+            ctx.lineTo(x, y - outerRadius);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // 绘制淡淡的灯塔背景图案
+        function drawLighthouseBackground(ctx, x, y) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.globalAlpha = 0.1; // 设置透明度，使其很淡
+            
+            // 绘制简化的灯塔轮廓
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            
+            // 灯塔主体
+            ctx.beginPath();
+            ctx.moveTo(-30, 150);
+            ctx.lineTo(-25, -100);
+            ctx.lineTo(25, -100);
+            ctx.lineTo(30, 150);
+            ctx.stroke();
+            
+            // 灯塔顶部
+            ctx.beginPath();
+            ctx.moveTo(-35, -100);
+            ctx.lineTo(0, -130);
+            ctx.lineTo(35, -100);
+            ctx.stroke();
+            
+            // 光线效果
+            ctx.beginPath();
+            ctx.moveTo(0, -110);
+            ctx.lineTo(-80, -80);
+            ctx.moveTo(0, -110);
+            ctx.lineTo(80, -80);
+            ctx.moveTo(0, -110);
+            ctx.lineTo(-60, -140);
+            ctx.moveTo(0, -110);
+            ctx.lineTo(60, -140);
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        // 绘制 Lighthouse Logo
+        function drawLighthouseLogo(ctx, x, y) {
+            // 尝试加载真实的 logo 图片
+            const img = new Image();
+            img.onload = function() {
+                ctx.save();
+                const logoSize = 60;
+                ctx.drawImage(img, x - logoSize/2, y - logoSize/2, logoSize, logoSize);
+                ctx.restore();
+            };
+            
+            // 如果图片加载失败，使用简化版本
+            img.onerror = function() {
+                drawSimpleLighthouseLogo(ctx, x, y);
+            };
+            
+            img.src = './LighthouseLogo.png';
+            
+            // 立即绘制简化版本作为备用
+            setTimeout(() => drawSimpleLighthouseLogo(ctx, x, y), 100);
+        }
+        
+        // 绘制简化的 Lighthouse Logo
+        function drawSimpleLighthouseLogo(ctx, x, y) {
+            ctx.save();
+            ctx.translate(x, y);
+            
+            // 绘制圆形背景
+            ctx.fillStyle = '#4A90E2';
+            ctx.beginPath();
+            ctx.arc(0, 0, 30, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制灯塔
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 32px Arial, sans-serif';
+            ctx.fillRect(-8, -15, 16, 20);
+            
+            // 绘制灯塔顶部
+            ctx.beginPath();
+            ctx.moveTo(-10, -15);
+            ctx.lineTo(0, -25);
+            ctx.lineTo(10, -15);
+            ctx.closePath();
+            ctx.fill();
+            
+            // 添加 "18" 标记
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 12px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('Lighthouse 18th Birthday', 300, 60);
+            ctx.fillText('18', 25, -20);
             
-            ctx.font = 'bold 24px Arial, sans-serif';
-            ctx.fillText('Future Wish Card', 300, 90);
+            ctx.restore();
+        }
+        
+        // 文本自动换行函数
+        function wrapText(ctx, text, maxWidth, fontSize) {
+            const words = text.split('');
+            const lines = [];
+            let currentLine = '';
             
-            // 添加姓名
-            ctx.font = 'bold 20px Arial, sans-serif';
-            ctx.fillText(`Name: ${currentWishData.name}`, 300, 140);
-            
-            // 添加愿望内容（自动换行）
-            ctx.font = '16px Arial, sans-serif';
-            ctx.textAlign = 'left';
-            const maxWidth = 500;
-            const lineHeight = 25;
-            const words = currentWishData.wish.split(' ');
-            let line = '';
-            let y = 180;
-            
-            ctx.fillText('Wish:', 50, 160);
-            
-            for (let n = 0; n < words.length; n++) {
-                const testLine = line + words[n] + ' ';
+            for (let i = 0; i < words.length; i++) {
+                const testLine = currentLine + words[i];
                 const metrics = ctx.measureText(testLine);
-                const testWidth = metrics.width;
-                if (testWidth > maxWidth && n > 0) {
-                    ctx.fillText(line, 50, y);
-                    line = words[n] + ' ';
-                    y += lineHeight;
+                
+                if (metrics.width > maxWidth && currentLine !== '') {
+                    lines.push(currentLine);
+                    currentLine = words[i];
                 } else {
-                    line = testLine;
+                    currentLine = testLine;
                 }
             }
-            ctx.fillText(line, 50, y);
+            lines.push(currentLine);
             
-            // 添加时间
-            ctx.font = '14px Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(`Time: ${currentWishData.time}`, 300, 350);
-            
-            // 添加Lighthouse Slogan
-            ctx.font = '12px Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.fillText('Light up your life and career; make you outstanding everywhere.', 300, 360);
-            
-            // 添加底部装饰
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.fillText('✨ Living Upward · 向上生活 ✨', 300, 380);
-            
-            // 下载图片
-            const link = document.createElement('a');
-            link.download = `LH_Future_Wish_Card_${currentWishData.name.replace(/\s+/g, '_')}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
+            return lines;
         }
     </script>
 </body>
