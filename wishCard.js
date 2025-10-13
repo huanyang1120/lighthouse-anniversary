@@ -100,7 +100,7 @@ function downloadWishCard(wishData, options = {}) {
     // 加载Logo并绘制，然后下载
     function drawContentWithLogo() {
         drawContent();
-        drawLighthouseLogo(ctx, 270, 200, downloadCard); // Logo向下移动10px
+        // drawLighthouseLogo(ctx, 270, 200, downloadCard); // Logo向下移动10px
     }
     
     // 如果提供了背景图片，使用指定的背景图片；否则从4个默认背景中随机选择
