@@ -63,23 +63,51 @@ function downloadWishCard(wishData, options = {}) {
         ctx.textAlign = 'left';
         ctx.fillText(`To ${wishData.name},`, 40, 290);
         
-        // 愿望内容 - 使用手写体，放在中间区域 - 向下移动10px
+        // 愿望内容 - 使用手写体，放在中间区域 - 动态调整
         ctx.fillStyle = '#f0f0f0';
-        ctx.font = '24px Brush Script MT, cursive';
         ctx.textAlign = 'left';
         
         // 自动换行处理愿望内容
-        const wishLines = wrapText(ctx, wishData.wish, 460, 24);
-        const startY = 350; // 向下移动10px
-        wishLines.forEach((line, index) => {
-            ctx.fillText(line, 40, startY + (index * 40));
-        });
+        let fontSize = 24;
+        let lineHeight = 35;
+        ctx.font = `${fontSize}px Brush Script MT, cursive`;
+        let wishLines = wrapText(ctx, wishData.wish, 460, fontSize);
         
-        // 右下角添加日期和时间（包含时分秒）
+        // 如果文本行数过多，自动缩小字体和行间距
+        const maxLines = 15; // 最多显示行数
+        if (wishLines.length > maxLines) {
+            fontSize = 20;
+            lineHeight = 30;
+            ctx.font = `${fontSize}px Brush Script MT, cursive`;
+            wishLines = wrapText(ctx, wishData.wish, 460, fontSize);
+            
+            // 如果还是太长，再次缩小
+            if (wishLines.length > 18) {
+                fontSize = 18;
+                lineHeight = 28;
+                ctx.font = `${fontSize}px Brush Script MT, cursive`;
+                wishLines = wrapText(ctx, wishData.wish, 460, fontSize);
+            }
+        }
+        
+        const startY = 350;
+        const maxDisplayLines = Math.min(wishLines.length, 20); // 最多显示20行
+        
+        for (let i = 0; i < maxDisplayLines; i++) {
+            ctx.fillText(wishLines[i], 40, startY + (i * lineHeight));
+        }
+        
+        // 如果文本被截断，添加省略号提示
+        if (wishLines.length > maxDisplayLines) {
+            ctx.fillText('...', 40, startY + (maxDisplayLines * lineHeight));
+        }
+        
+        // 右下角添加日期和时间（包含时分秒）- 位置动态调整
+        const timeY = Math.max(850, startY + (maxDisplayLines * lineHeight) + 80);
         ctx.fillStyle = '#d0d0d0';
         ctx.font = '18px Georgia, serif';
         ctx.textAlign = 'right';
-        ctx.fillText(wishData.time, 500, 850);
+        ctx.fillText(wishData.time, 500, Math.min(timeY, 930)); // 确保不超出画布
         
         // 底部装饰 - Lighthouse 标语
         ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
@@ -97,10 +125,10 @@ function downloadWishCard(wishData, options = {}) {
         link.click();
     }
     
-    // 加载Logo并绘制，然后下载
+    // 绘制内容并直接下载（不再需要Logo）
     function drawContentWithLogo() {
         drawContent();
-        // drawLighthouseLogo(ctx, 270, 200, downloadCard); // Logo向下移动10px
+        downloadCard(); // 直接下载，不绘制Logo
     }
     
     // 如果提供了背景图片，使用指定的背景图片；否则从4个默认背景中随机选择
@@ -340,7 +368,7 @@ function drawSimpleLighthouseLogo(ctx, x, y) {
 }
 
 /**
- * 文本自动换行函数
+ * 文本自动换行函数 - 支持中英文混合文本
  * @param {CanvasRenderingContext2D} ctx - Canvas 2D 上下文
  * @param {string} text - 要换行的文本
  * @param {number} maxWidth - 最大宽度
@@ -360,24 +388,31 @@ function wrapText(ctx, text, maxWidth, fontSize) {
             return;
         }
         
-        // 对每个段落进行自动换行处理
-        const words = paragraph.split(' ');
         let currentLine = '';
         
-        for (let i = 0; i < words.length; i++) {
-            const testLine = currentLine + (currentLine ? ' ' : '') + words[i];
+        // 逐字符处理，更好地支持中文
+        for (let i = 0; i < paragraph.length; i++) {
+            const char = paragraph[i];
+            const testLine = currentLine + char;
             const metrics = ctx.measureText(testLine);
             
             if (metrics.width > maxWidth && currentLine !== '') {
-                lines.push(currentLine);
-                currentLine = words[i];
+                // 如果当前字符是空格或标点，尝试在此处换行
+                if (char === ' ' || char === '，' || char === '。' || char === '！' || char === '？' || char === '；') {
+                    lines.push(currentLine.trim());
+                    currentLine = '';
+                } else {
+                    // 否则，将当前行添加到结果中，新行从当前字符开始
+                    lines.push(currentLine.trim());
+                    currentLine = char;
+                }
             } else {
                 currentLine = testLine;
             }
         }
         
-        if (currentLine) {
-            lines.push(currentLine);
+        if (currentLine.trim()) {
+            lines.push(currentLine.trim());
         }
     });
     
