@@ -1,0 +1,385 @@
+/**
+ * Lighthouse 18th Birthday Wish Card Generator
+ * 生成精美的愿望卡片功能模块
+ */
+
+// 导出函数给外部使用
+window.WishCard = {
+    downloadWishCard,
+    drawBackgroundImage,
+    drawStarField,
+    drawStar,
+    drawLighthouseBackground,
+    drawLighthouseLogo,
+    drawSimpleLighthouseLogo,
+    wrapText
+};
+
+/**
+ * 下载愿望卡片
+ * @param {Object} wishData - 愿望数据对象，包含 name, wish, time
+ * @param {Object} options - 可选配置参数
+ * @param {string} options.backgroundImage - 背景图片路径（可选）
+ */
+function downloadWishCard(wishData, options = {}) {
+    if (!wishData) {
+        console.error('No wish data available');
+        if (typeof showError === 'function') {
+            showError('No wish data available');
+        }
+        return;
+    }
+
+    const canvas = document.getElementById('cardCanvas');
+    if (!canvas) {
+        console.error('Canvas element not found');
+        return;
+    }
+    
+    const ctx = canvas.getContext('2d');
+    
+    // 设置手机满屏 9:16 尺寸 (例: 540x960)
+    canvas.width = 540;
+    canvas.height = 960;
+    
+    // 根据配置选择背景方式
+    function drawContent() {
+        // 添加更丰富的星空效果
+        drawStarField(ctx, 540, 960);
+        
+        // 添加淡淡的灯塔背景图案
+        // drawLighthouseBackground(ctx, 270, 480);
+        
+        // 在顶部添加标题
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 32px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Lighthouse 18th Birthday', 270, 80);
+        ctx.fillText('Future Wish Card', 270, 120);
+        
+        // 明信片样式开头 "To [姓名]" - 向下移动10px
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '28px Brush Script MT, cursive';
+        ctx.textAlign = 'left';
+        ctx.fillText(`To ${wishData.name},`, 40, 290);
+        
+        // 愿望内容 - 使用手写体，放在中间区域 - 向下移动10px
+        ctx.fillStyle = '#f0f0f0';
+        ctx.font = '24px Brush Script MT, cursive';
+        ctx.textAlign = 'left';
+        
+        // 自动换行处理愿望内容
+        const wishLines = wrapText(ctx, wishData.wish, 460, 24);
+        const startY = 350; // 向下移动10px
+        wishLines.forEach((line, index) => {
+            ctx.fillText(line, 40, startY + (index * 40));
+        });
+        
+        // 右下角添加日期和时间（包含时分秒）
+        ctx.fillStyle = '#d0d0d0';
+        ctx.font = '18px Georgia, serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(wishData.time, 500, 850);
+        
+        // 底部装饰 - Lighthouse 标语
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.font = '16px Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Light up your life and career', 270, 890);
+        ctx.fillText('✨ Living Upward · 向上生活 ✨', 270, 920);
+    }
+    
+    function downloadCard() {
+        // 下载图片
+        const link = document.createElement('a');
+        link.download = `Lighthouse_18th_Wish_Card_${wishData.name.replace(/\s+/g, '_')}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    }
+    
+    // 加载Logo并绘制，然后下载
+    function drawContentWithLogo() {
+        drawContent();
+        drawLighthouseLogo(ctx, 270, 200, downloadCard); // Logo向下移动10px
+    }
+    
+    // 如果提供了背景图片，使用指定的背景图片；否则从4个默认背景中随机选择
+    let backgroundImage;
+    if (options.backgroundImage) {
+        backgroundImage = options.backgroundImage;
+    } else {
+        // 从4个背景图片中随机选择
+        const backgroundVariants = [
+            './wishcardBackground01.jpg',
+            './wishcardBackground02.jpg', 
+            './wishcardBackground03.jpg',
+            './wishcardBackground04.jpg'
+        ];
+        const randomIndex = Math.floor(Math.random() * backgroundVariants.length);
+        backgroundImage = backgroundVariants[randomIndex];
+    }
+    drawBackgroundImage(ctx, backgroundImage, 540, 960, drawContentWithLogo);
+}
+
+/**
+ * 用图片设置背景
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {string} imgSrc 图片路径
+ * @param {number} width 画布宽度
+ * @param {number} height 画布高度
+ * @param {Function} [callback] 图片绘制完成后的回调
+ */
+function drawBackgroundImage(ctx, imgSrc, width, height, callback) {
+    const img = new Image();
+    img.onload = function() {
+        ctx.drawImage(img, 0, 0, width, height);
+        if (typeof callback === 'function') callback();
+    };
+    img.src = imgSrc;
+}
+
+/**
+ * 绘制星空效果
+ * @param {CanvasRenderingContext2D} ctx - Canvas 2D 上下文
+ * @param {number} width - 画布宽度
+ * @param {number} height - 画布高度
+ */
+function drawStarField(ctx, width, height) {
+    // 大星星
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    for (let i = 0; i < 30; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        const radius = Math.random() * 2 + 1;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // 中等星星
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    for (let i = 0; i < 50; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        const radius = Math.random() * 1.5 + 0.5;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // 小星星
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    for (let i = 0; i < 80; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        const radius = Math.random() * 1;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // 添加一些闪烁的星星效果
+    ctx.fillStyle = 'rgba(255, 255, 200, 0.8)';
+    for (let i = 0; i < 15; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        drawStar(ctx, x, y, 3, 6, 1.5);
+    }
+}
+
+/**
+ * 绘制星形
+ * @param {CanvasRenderingContext2D} ctx - Canvas 2D 上下文
+ * @param {number} x - 中心X坐标
+ * @param {number} y - 中心Y坐标
+ * @param {number} spikes - 星形的角数
+ * @param {number} outerRadius - 外半径
+ * @param {number} innerRadius - 内半径
+ */
+function drawStar(ctx, x, y, spikes, outerRadius, innerRadius) {
+    let rot = Math.PI / 2 * 3;
+    let step = Math.PI / spikes;
+    
+    ctx.beginPath();
+    ctx.moveTo(x, y - outerRadius);
+    
+    for (let i = 0; i < spikes; i++) {
+        ctx.lineTo(x + Math.cos(rot) * outerRadius, y + Math.sin(rot) * outerRadius);
+        rot += step;
+        ctx.lineTo(x + Math.cos(rot) * innerRadius, y + Math.sin(rot) * innerRadius);
+        rot += step;
+    }
+    
+    ctx.lineTo(x, y - outerRadius);
+    ctx.closePath();
+    ctx.fill();
+}
+
+/**
+ * 绘制淡淡的灯塔背景图案
+ * @param {CanvasRenderingContext2D} ctx - Canvas 2D 上下文
+ * @param {number} x - 中心X坐标
+ * @param {number} y - 中心Y坐标
+ */
+function drawLighthouseBackground(ctx, x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.globalAlpha = 0.1; // 设置透明度，使其很淡
+    
+    // 绘制简化的灯塔轮廓
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 3;
+    
+    // 灯塔主体
+    ctx.beginPath();
+    ctx.moveTo(-30, 150);
+    ctx.lineTo(-25, -100);
+    ctx.lineTo(25, -100);
+    ctx.lineTo(30, 150);
+    ctx.stroke();
+    
+    // 灯塔顶部
+    ctx.beginPath();
+    ctx.moveTo(-35, -100);
+    ctx.lineTo(0, -130);
+    ctx.lineTo(35, -100);
+    ctx.stroke();
+    
+    // 光线效果
+    ctx.beginPath();
+    ctx.moveTo(0, -110);
+    ctx.lineTo(-80, -80);
+    ctx.moveTo(0, -110);
+    ctx.lineTo(80, -80);
+    ctx.moveTo(0, -110);
+    ctx.lineTo(-60, -140);
+    ctx.moveTo(0, -110);
+    ctx.lineTo(60, -140);
+    ctx.stroke();
+    
+    ctx.restore();
+}
+
+/**
+ * 绘制 Lighthouse Logo
+ * @param {CanvasRenderingContext2D} ctx - Canvas 2D 上下文
+ * @param {number} x - 中心X坐标
+ * @param {number} y - 中心Y坐标
+ * @param {Function} [callback] - Logo绘制完成后的回调函数
+ */
+function drawLighthouseLogo(ctx, x, y, callback) {
+    const img = new Image();
+    img.onload = function() {
+        ctx.save();
+        const logoSize = 120; // 增加到原来的2倍大小
+        
+        // 绘制淡淡的光晕效果
+        const glowRadius = logoSize / 2 + 15; // 光晕半径比Logo稍大
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)'); // 中心白色光晕
+        gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)'); // 中间淡化
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)'); // 边缘透明
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 绘制Logo图片
+        ctx.drawImage(img, x - logoSize / 2, y - logoSize / 2, logoSize, logoSize);
+        ctx.restore();
+        if (typeof callback === 'function') callback();
+    };
+    img.onerror = function() {
+        // 图片加载失败时可以绘制一个简化logo或提示
+        // drawSimpleLighthouseLogo(ctx, x, y);
+        if (typeof callback === 'function') callback();
+    };
+    
+    // 随机选择Golden或Blue版本的Logo
+    const logoVariants = ['./lighthouseLogo_Golden.png', './lighthouseLogo_Blue.png'];
+    const randomIndex = Math.floor(Math.random() * logoVariants.length);
+    img.src = logoVariants[randomIndex];
+}
+
+/**
+ * 绘制简化的 Lighthouse Logo
+ * @param {CanvasRenderingContext2D} ctx - Canvas 2D 上下文
+ * @param {number} x - 中心X坐标
+ * @param {number} y - 中心Y坐标
+ */
+function drawSimpleLighthouseLogo(ctx, x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+    
+    // 绘制圆形背景
+    ctx.fillStyle = '#4A90E2';
+    ctx.beginPath();
+    ctx.arc(0, 0, 30, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 绘制灯塔
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-8, -15, 16, 20);
+    
+    // 绘制灯塔顶部
+    ctx.beginPath();
+    ctx.moveTo(-10, -15);
+    ctx.lineTo(0, -25);
+    ctx.lineTo(10, -15);
+    ctx.closePath();
+    ctx.fill();
+    
+    // 添加 "18" 标记
+    ctx.fillStyle = '#FFD700';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('18', 25, -20);
+    
+    ctx.restore();
+}
+
+/**
+ * 文本自动换行函数
+ * @param {CanvasRenderingContext2D} ctx - Canvas 2D 上下文
+ * @param {string} text - 要换行的文本
+ * @param {number} maxWidth - 最大宽度
+ * @param {number} fontSize - 字体大小
+ * @returns {Array<string>} 换行后的文本数组
+ */
+function wrapText(ctx, text, maxWidth, fontSize) {
+    const lines = [];
+    
+    // 先按换行符分割文本
+    const paragraphs = text.split(/\r?\n/);
+    
+    paragraphs.forEach(paragraph => {
+        if (paragraph.trim() === '') {
+            // 空行也要保留
+            lines.push('');
+            return;
+        }
+        
+        // 对每个段落进行自动换行处理
+        const words = paragraph.split(' ');
+        let currentLine = '';
+        
+        for (let i = 0; i < words.length; i++) {
+            const testLine = currentLine + (currentLine ? ' ' : '') + words[i];
+            const metrics = ctx.measureText(testLine);
+            
+            if (metrics.width > maxWidth && currentLine !== '') {
+                lines.push(currentLine);
+                currentLine = words[i];
+            } else {
+                currentLine = testLine;
+            }
+        }
+        
+        if (currentLine) {
+            lines.push(currentLine);
+        }
+    });
+    
+    return lines;
+}
