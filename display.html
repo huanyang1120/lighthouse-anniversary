@@ -101,36 +101,182 @@
         .header {
             text-align: center;
             padding: 30px 20px;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(40px) saturate(180%);
             -webkit-backdrop-filter: blur(40px) saturate(180%);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
             z-index: 10;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                0 1px 0 rgba(255, 255, 255, 0.1) inset;
+            overflow: hidden;
+        }
+
+        /* Header 背景动态光效 */
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                circle at center,
+                rgba(78, 205, 196, 0.15) 0%,
+                rgba(69, 183, 209, 0.1) 25%,
+                transparent 50%
+            );
+            animation: headerGlowRotate 10s linear infinite;
+            z-index: -1;
+        }
+
+        /* Header 扫光效果 */
+        .header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 100%
+            );
+            animation: headerSweep 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes headerGlowRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes headerSweep {
+            0% {
+                left: -100%;
+            }
+            50% {
+                left: 100%;
+            }
+            100% {
+                left: 100%;
+            }
         }
 
         .title {
             font-size: 56px;
             font-weight: 700;
             margin-bottom: 12px;
-            background: linear-gradient(135deg, #ffffff 0%, #a0d8ef 50%, #4ecdc4 100%);
+            background: linear-gradient(135deg, 
+                #ffffff 0%, 
+                #a0d8ef 25%,
+                #4ecdc4 50%, 
+                #45b7d1 75%,
+                #ffffff 100%
+            );
+            background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             letter-spacing: -1.5px;
-            animation: titleFloat 6s ease-in-out infinite;
-            text-shadow: none;
+            position: relative;
+            animation: 
+                titleFloat 6s ease-in-out infinite,
+                gradientShift 4s ease-in-out infinite,
+                titleGlow 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.4))
+                    drop-shadow(0 0 40px rgba(69, 183, 209, 0.3))
+                    drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5));
+        }
+
+        /* 标题后面的光晕层 */
+        .title::before {
+            content: 'Lighthouse 18th Birthday';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, 
+                rgba(78, 205, 196, 0.6) 0%, 
+                rgba(69, 183, 209, 0.6) 50%,
+                rgba(255, 255, 255, 0.6) 100%
+            );
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: blur(20px);
+            opacity: 0.8;
+            z-index: -1;
+            animation: gradientShift 4s ease-in-out infinite reverse;
+        }
+
+        /* 标题闪烁高光效果 */
+        .title::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -10%;
+            width: 30%;
+            height: 200%;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.8) 50%, 
+                transparent 100%
+            );
+            transform: skewX(-20deg);
+            animation: titleShine 3s ease-in-out infinite;
         }
 
         @keyframes titleFloat {
             0%, 100% {
-                transform: translateY(0);
-                filter: brightness(1);
+                transform: translateY(0) scale(1);
             }
             50% {
-                transform: translateY(-5px);
-                filter: brightness(1.2);
+                transform: translateY(-8px) scale(1.02);
+            }
+        }
+
+        @keyframes gradientShift {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        @keyframes titleGlow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.4))
+                        drop-shadow(0 0 40px rgba(69, 183, 209, 0.3))
+                        drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5));
+            }
+            50% {
+                filter: drop-shadow(0 0 30px rgba(78, 205, 196, 0.8))
+                        drop-shadow(0 0 60px rgba(69, 183, 209, 0.6))
+                        drop-shadow(0 0 80px rgba(255, 255, 255, 0.4))
+                        drop-shadow(0 4px 30px rgba(0, 0, 0, 0.6));
+            }
+        }
+
+        @keyframes titleShine {
+            0% {
+                left: -30%;
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.8;
+            }
+            100% {
+                left: 120%;
+                opacity: 0;
             }
         }
 
@@ -139,12 +285,70 @@
             opacity: 0.8;
             font-weight: 400;
             letter-spacing: 0.5px;
-            animation: subtitleFade 4s ease-in-out infinite;
+            position: relative;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.6) 0%,
+                rgba(255, 255, 255, 0.9) 25%,
+                rgba(78, 205, 196, 0.8) 50%,
+                rgba(255, 255, 255, 0.9) 75%,
+                rgba(255, 255, 255, 0.6) 100%
+            );
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: 
+                subtitleFade 4s ease-in-out infinite,
+                subtitleGradient 3s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+        }
+
+        /* 副标题光晕 */
+        .subtitle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 150%;
+            background: radial-gradient(ellipse, 
+                rgba(78, 205, 196, 0.3) 0%, 
+                transparent 70%
+            );
+            z-index: -1;
+            animation: subtitleGlowPulse 3s ease-in-out infinite;
         }
 
         @keyframes subtitleFade {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 0.95; }
+            0%, 100% { 
+                opacity: 0.7;
+                transform: translateY(0);
+            }
+            50% { 
+                opacity: 1;
+                transform: translateY(-2px);
+            }
+        }
+
+        @keyframes subtitleGradient {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        @keyframes subtitleGlowPulse {
+            0%, 100% {
+                opacity: 0.4;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
         }
 
         .main-content {
@@ -736,6 +940,221 @@
             }
         }
 
+        
+
+
+
+        /* 灯室（顶部宽矩形房子）*/
+        .lighthouse-lantern {
+            position: absolute;
+            bottom: 195px;  /* 调整5px使其与圆柱体重叠连接 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 75px;  /* 增加5px高度用于与塔身重叠 */
+            background: linear-gradient(180deg,
+                rgba(255, 215, 0, 0.95) 0%,
+                rgba(255, 200, 0, 0.9) 50%,
+                rgba(255, 180, 0, 0.85) 100%
+            );
+            border-radius: 6px;
+            box-shadow: 
+                0 0 40px rgba(255, 215, 0, 0.9),
+                0 0 80px rgba(255, 215, 0, 0.5),
+                inset 0 -10px 30px rgba(255, 150, 0, 0.4);
+            animation: lanternGlow 2s ease-in-out infinite;
+            position: relative;
+            z-index: 2;  /* 确保灯室在塔身上方 */
+        }
+
+        /* 灯室屋顶 */
+        .lighthouse-lantern::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 55px solid transparent;
+            border-right: 55px solid transparent;
+            border-bottom: 25px solid rgba(255, 200, 0, 0.95);
+            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6));
+        }
+
+        /* 灯室窗户 */
+        .lighthouse-lantern::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 40px;
+            background: linear-gradient(90deg,
+                rgba(255, 255, 200, 0.3) 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                rgba(255, 255, 200, 0.3) 100%
+            );
+            border-radius: 4px;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* 灯室底部平台（连接圆柱体和灯室）*/
+        .lighthouse-stripe {
+            position: absolute;
+            bottom: 190px;  /* 在圆柱体顶部和灯室底部之间 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90px;
+            height: 15px;
+            background: linear-gradient(180deg,
+                rgba(40, 80, 140, 0.8) 0%,
+                rgba(30, 60, 120, 0.7) 100%
+            );
+            border-radius: 4px;
+            box-shadow: 
+                0 2px 10px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(40, 80, 140, 0.4);
+            z-index: 1;
+        }
+
+        /* 灯室闪烁动画 */
+        @keyframes lanternGlow {
+            0%, 100% {
+                box-shadow: 
+                    0 0 30px rgba(255, 215, 0, 0.8),
+                    0 0 60px rgba(255, 215, 0, 0.4);
+                filter: brightness(1);
+            }
+            50% {
+                box-shadow: 
+                    0 0 50px rgba(255, 215, 0, 1),
+                    0 0 100px rgba(255, 215, 0, 0.6);
+                filter: brightness(1.3);
+            }
+        }
+
+        /* 扇形光束容器 - 从灯室中心发出 */
+        .lighthouse-light {
+            position: absolute;
+            bottom: 232px;  /* 灯室中心位置：195 + 75/2 = 232.5px */
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            transform: translateX(-50%);
+            transform-origin: 50% 0%;  /* 旋转原点在底部中心（灯室位置）*/
+            animation: rotateLighthouseLight 6s linear infinite;
+            pointer-events: none;
+            z-index: 1;  /* 在灯塔下方 */
+        }
+
+        /* 扇形光束 */
+        .light-beam-sector {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            transform: translateX(-50%);
+            clip-path: polygon(50% 0%, 48% 100%, 52% 100%);
+            background: linear-gradient(to bottom,
+                rgba(255, 215, 0, 0.8) 0%,
+                rgba(255, 215, 0, 0.5) 30%,
+                rgba(255, 215, 0, 0.2) 60%,
+                rgba(255, 215, 0, 0.05) 100%
+            );
+            filter: blur(12px);
+        }
+
+        /* 第二层扇形光束（更宽更柔和）*/
+        .light-beam-sector-wide {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            transform: translateX(-50%);
+            clip-path: polygon(50% 0%, 45% 100%, 55% 100%);
+            background: linear-gradient(to bottom,
+                rgba(255, 215, 0, 0.6) 0%,
+                rgba(255, 215, 0, 0.35) 25%,
+                rgba(255, 215, 0, 0.15) 50%,
+                rgba(255, 215, 0, 0.03) 75%,
+                transparent 100%
+            );
+            filter: blur(25px);
+        }
+
+        /* 光束旋转动画 */
+        @keyframes rotateLighthouseLight {
+            0% {
+                transform: translateX(-50%) rotate(0deg);
+            }
+            100% {
+                transform: translateX(-50%) rotate(360deg);
+            }
+        }
+
+        /* 整体浮动效果 */
+        .lighthouse-body {
+            animation: lighthouseFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes lighthouseFloat {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+
+        /* 底部水面反射光 */
+        .lighthouse-glow {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 60px;
+            background: radial-gradient(ellipse,
+                rgba(40, 80, 140, 0.3) 0%,
+                rgba(40, 80, 140, 0.15) 50%,
+                transparent 100%
+            );
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% {
+                opacity: 0.5;
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translateX(-50%) scale(1.2);
+            }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .lighthouse-container {
+                transform: translate(-50%, -50%) scale(0.7);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .lighthouse-container {
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+        }
+
+        /* 隐藏旧的ASCII样式 */
+        .lighthouse-ascii {
+            display: none;
+        }
+
         .starfield {
             position: absolute;
             top: 0;
@@ -1067,6 +1486,35 @@
         <div class="latest-wish-number" id="latestWishNumber">0</div>
     </div>
 
+    <!-- 灯塔 -->
+    <div class="lighthouse-container">
+        <!-- 扇形光束（旋转） -->
+        <div class="lighthouse-light">
+            <div class="light-beam-sector"></div>
+            <div class="light-beam-sector-wide"></div>
+        </div>
+        
+        <!-- 灯塔主体 -->
+        <div class="lighthouse-body">
+            <!-- 灯室（顶部黄色发光部分） -->
+            <div class="lighthouse-lantern"></div>
+            
+            <!-- 塔身条纹 -->
+            <div class="lighthouse-stripe"></div>
+            
+            <!-- 灯塔塔身（梯形，上宽下窄） -->
+            <div class="lighthouse-tower"></div>
+            
+            <!-- 底座 -->
+            <div class="lighthouse-base"></div>
+        </div>
+        
+        <!-- 底部光晕反射 -->
+        <div class="lighthouse-glow"></div>
+        
+    
+    </div>
+
     <div class="main-content">
         <div class="wishes-panel">
             <div class="section-title">Latest Wishes</div>
@@ -1343,6 +1791,113 @@
                 };
                 
                 animate();
+            }
+
+            // 初始化灯塔交互效果
+            initLighthouse() {
+                const lighthouse = document.querySelector('.lighthouse-container');
+                const lighthouseAscii = document.querySelector('.lighthouse-ascii');
+                
+                if (!lighthouse || !lighthouseAscii) return;
+                
+                // 鼠标悬停时加速旋转
+                lighthouse.addEventListener('mouseenter', () => {
+                    const lightBeams = document.querySelector('.lighthouse-light');
+                    if (lightBeams) {
+                        lightBeams.style.animationDuration = '2s';
+                    }
+                    lighthouseAscii.style.transform = 'scale(1.05)';
+                    lighthouseAscii.style.filter = 'drop-shadow(0 0 30px rgba(135, 206, 250, 0.4))';
+                });
+                
+                lighthouse.addEventListener('mouseleave', () => {
+                    const lightBeams = document.querySelector('.lighthouse-light');
+                    if (lightBeams) {
+                        lightBeams.style.animationDuration = '4s';
+                    }
+                    lighthouseAscii.style.transform = 'scale(1)';
+                    lighthouseAscii.style.filter = 'drop-shadow(0 0 20px rgba(135, 206, 250, 0.2))';
+                });
+                
+                // 点击灯塔时触发特效
+                lighthouse.addEventListener('click', () => {
+                    // 创建扩散波纹
+                    this.createLighthouseRipple();
+                    
+                    // 闪烁效果
+                    lighthouseAscii.style.animation = 'lighthouseFlash 0.5s ease-out';
+                    setTimeout(() => {
+                        lighthouseAscii.style.animation = 'lighthouseFloat 4s ease-in-out infinite';
+                    }, 500);
+                });
+                
+                // 添加闪烁动画样式
+                if (!document.getElementById('lighthouseFlashStyle')) {
+                    const style = document.createElement('style');
+                    style.id = 'lighthouseFlashStyle';
+                    style.textContent = `
+                        @keyframes lighthouseFlash {
+                            0%, 100% { 
+                                filter: drop-shadow(0 0 20px rgba(135, 206, 250, 0.2));
+                                transform: scale(1);
+                            }
+                            50% { 
+                                filter: drop-shadow(0 0 60px rgba(135, 206, 250, 0.5));
+                                transform: scale(1.1);
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+
+            // 创建灯塔波纹特效
+            createLighthouseRipple() {
+                const lighthouse = document.querySelector('.lighthouse-container');
+                if (!lighthouse) return;
+                
+                const ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    width: 20px;
+                    height: 20px;
+                    border: 2px solid rgba(255, 215, 0, 0.2);
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%);
+                    pointer-events: none;
+                    animation: rippleExpand 1s ease-out forwards;
+                `;
+                
+                lighthouse.appendChild(ripple);
+                
+                // 添加波纹动画
+                if (!document.getElementById('rippleExpandStyle')) {
+                    const style = document.createElement('style');
+                    style.id = 'rippleExpandStyle';
+                    style.textContent = `
+                        @keyframes rippleExpand {
+                            0% {
+                                width: 20px;
+                                height: 20px;
+                                opacity: 1;
+                            }
+                            100% {
+                                width: 150px;
+                                height: 150px;
+                                opacity: 0;
+                                border-width: 1px;
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                // 移除波纹元素
+                setTimeout(() => {
+                    ripple.remove();
+                }, 1000);
             }
 
             // 初始化祝福文字轮播
