@@ -13,29 +13,86 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 背景渐变动画 */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 背景装饰粒子 */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
         }
 
         .container {
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 30px;
             padding: 40px;
             max-width: 400px;
             width: 100%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+                0 8px 32px rgba(102, 126, 234, 0.2);
             text-align: center;
+            position: relative;
+            animation: containerFadeIn 0.8s ease-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 25px 80px rgba(0, 0, 0, 0.35),
+                0 0 0 1px rgba(255, 255, 255, 0.3) inset,
+                0 12px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes containerFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .logo {
             width: 80px;
             height: 80px;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
             border-radius: 50%;
             margin: 0 auto 20px;
             display: flex;
@@ -44,44 +101,133 @@
             font-size: 24px;
             font-weight: bold;
             color: white;
+            box-shadow: 
+                0 10px 30px rgba(255, 107, 107, 0.4),
+                0 0 20px rgba(78, 205, 196, 0.3);
+            animation: logoFloat 3s ease-in-out infinite, logoPulse 2s ease-in-out infinite;
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            opacity: 0.3;
+            animation: ripple 2s ease-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4), 0 0 20px rgba(78, 205, 196, 0.3); }
+            50% { box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6), 0 0 30px rgba(78, 205, 196, 0.5); }
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
         }
 
         h1 {
             color: #333;
             margin-bottom: 10px;
             font-size: 28px;
+            animation: titleSlideIn 0.6s ease-out 0.2s both;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes titleSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .subtitle {
             color: #666;
             margin-bottom: 30px;
             font-size: 16px;
+            animation: titleSlideIn 0.6s ease-out 0.3s both;
+            font-style: italic;
+            letter-spacing: 1px;
         }
 
         .form-group {
             margin-bottom: 20px;
             text-align: left;
+            animation: formSlideIn 0.6s ease-out both;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.4s; }
+        .form-group:nth-child(2) { animation-delay: 0.5s; }
+
+        @keyframes formSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         label {
             display: block;
             margin-bottom: 8px;
             color: #333;
-            font-weight: 500;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group:focus-within label {
+            color: #667eea;
         }
 
         input, textarea {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #e1e5e9;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
             outline: none;
+            background: rgba(255, 255, 255, 0.9);
         }
 
         input:focus, textarea:focus {
             border-color: #667eea;
+            box-shadow: 
+                0 0 0 3px rgba(102, 126, 234, 0.1),
+                0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        input:hover, textarea:hover {
+            border-color: #b8c5f2;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
         }
 
         textarea {
@@ -90,7 +236,8 @@
         }
 
         .submit-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            background-size: 200% 200%;
             color: white;
             border: none;
             padding: 15px 30px;
@@ -98,13 +245,44 @@
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
             width: 100%;
+            box-shadow: 
+                0 8px 20px rgba(102, 126, 234, 0.3),
+                0 0 0 0 rgba(102, 126, 234, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
         }
 
         .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 12px 30px rgba(102, 126, 234, 0.4),
+                0 0 0 4px rgba(102, 126, 234, 0.1);
+            background-position: 100% 0;
+        }
+
+        .submit-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.35);
         }
 
         .submit-btn:disabled {
@@ -114,16 +292,48 @@
         }
 
         .success-message {
-            background: #4caf50;
+            background: linear-gradient(135deg, #4caf50, #45b7d1);
             color: white;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 20px;
+            border-radius: 15px;
             margin-top: 20px;
             display: none;
+            box-shadow: 
+                0 8px 25px rgba(76, 175, 80, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+            animation: successSlideIn 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-message::before {
+            content: '✨';
+            position: absolute;
+            font-size: 100px;
+            opacity: 0.1;
+            right: -20px;
+            top: -20px;
+            animation: sparkleRotate 3s linear infinite;
+        }
+
+        @keyframes successSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes sparkleRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .download-card-btn, .view-all-btn {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
             color: white;
             border: none;
             padding: 10px 20px;
@@ -132,17 +342,45 @@
             font-weight: bold;
             cursor: pointer;
             margin: 5px;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            position: relative;
+            overflow: hidden;
         }
 
         .view-all-btn {
-            background: linear-gradient(45deg, #45b7d1, #667eea);
+            background: linear-gradient(135deg, #45b7d1, #667eea);
+            box-shadow: 0 4px 15px rgba(69, 183, 209, 0.3);
         }
 
         .download-card-btn:hover, .view-all-btn:hover {
-            transform: translateY(-1px);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .view-all-btn:hover {
+            box-shadow: 0 6px 20px rgba(69, 183, 209, 0.4);
+        }
+
+        .download-card-btn:active, .view-all-btn:active {
+            transform: translateY(0) scale(1);
+        }
+
+        .download-card-btn::before, .view-all-btn::before {
+            content: '✨';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .download-card-btn:hover::before, .view-all-btn:hover::before {
+            left: 10px;
+            opacity: 1;
         }
 
         .action-buttons {
@@ -158,27 +396,42 @@
         }
 
         .error-message {
-            background: #f44336;
+            background: linear-gradient(135deg, #f44336, #e91e63);
             color: white;
             padding: 15px;
             border-radius: 10px;
             margin-top: 20px;
             display: none;
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.3);
+            animation: errorShake 0.5s ease-out;
+        }
+
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
 
         .loading {
             display: none;
             margin-top: 20px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .spinner {
-            border: 3px solid #f3f3f3;
+            border: 3px solid rgba(102, 126, 234, 0.2);
             border-top: 3px solid #667eea;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
             margin: 0 auto;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
         }
 
         @keyframes spin {
@@ -376,60 +629,107 @@
             canvas.width = 540;
             canvas.height = 960;
             
-            // 创建深色星空背景
-            const gradient = ctx.createRadialGradient(270, 480, 0, 270, 480, 600);
-            gradient.addColorStop(0, '#0f0f23');
-            gradient.addColorStop(0.5, '#16213e');
-            gradient.addColorStop(1, '#1a1a2e');
+            // 创建深色星空背景 - 更加丰富的渐变
+            const gradient = ctx.createRadialGradient(270, 200, 0, 270, 600, 800);
+            gradient.addColorStop(0, '#1a1a3e');
+            gradient.addColorStop(0.3, '#0f0f23');
+            gradient.addColorStop(0.6, '#16213e');
+            gradient.addColorStop(1, '#0a0a1a');
             ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 540, 960);
+            
+            // 添加紫色/蓝色光晕效果
+            const glowGradient = ctx.createRadialGradient(270, 100, 0, 270, 300, 400);
+            glowGradient.addColorStop(0, 'rgba(138, 43, 226, 0.2)');
+            glowGradient.addColorStop(0.5, 'rgba(65, 105, 225, 0.1)');
+            glowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = glowGradient;
             ctx.fillRect(0, 0, 540, 960);
             
             // 添加更丰富的星空效果
             drawStarField(ctx, 540, 960);
             
+            // 添加多个流星效果 - 关键新增功能
+            drawShootingStars(ctx, 540, 960);
+            
             // 添加淡淡的灯塔背景图案
             drawLighthouseBackground(ctx, 270, 480);
             
-            // 在顶部添加标题
+            // 在顶部添加标题 - 增加发光效果
+            ctx.shadowColor = 'rgba(138, 43, 226, 0.8)';
+            ctx.shadowBlur = 20;
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 32px Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('Lighthouse 18th Birthday', 270, 80);
+            
+            ctx.shadowColor = 'rgba(65, 105, 225, 0.8)';
+            ctx.shadowBlur = 20;
             ctx.fillText('Future Wish Card', 270, 120);
+            ctx.shadowBlur = 0; // 重置阴影
             
             // 添加 Lighthouse logo
             drawLighthouseLogo(ctx, 270, 180);
             
-            // 明信片样式开头 "To [姓名]"
-            ctx.fillStyle = '#ffffff';
+            // 明信片样式开头 "To [姓名]" - 添加装饰
+            ctx.fillStyle = '#FFD700';
             ctx.font = '28px Brush Script MT, cursive';
             ctx.textAlign = 'left';
             ctx.fillText(`To ${currentWishData.name},`, 40, 260);
+            
+            // 添加装饰线
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(40, 270);
+            ctx.lineTo(200, 270);
+            ctx.stroke();
             
             // 愿望内容 - 使用手写体，放在中间区域
             ctx.fillStyle = '#f0f0f0';
             ctx.font = '24px Brush Script MT, cursive';
             ctx.textAlign = 'left';
             
+            // 添加内容区域的装饰边框
+            ctx.save();
+            ctx.strokeStyle = 'rgba(138, 43, 226, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.strokeRect(30, 300, 480, 500);
+            ctx.setLineDash([]);
+            ctx.restore();
+            
             // 自动换行处理愿望内容
             const wishLines = wrapText(ctx, currentWishData.wish, 460, 24);
             const startY = 320;
             wishLines.forEach((line, index) => {
+                // 添加淡淡的文字阴影使其更突出
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 3;
                 ctx.fillText(line, 40, startY + (index * 40));
             });
+            ctx.shadowBlur = 0;
             
             // 右下角添加日期和时间（包含时分秒）
-            ctx.fillStyle = '#d0d0d0';
-            ctx.font = '18px Georgia, serif';
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'italic 18px Georgia, serif';
             ctx.textAlign = 'right';
+            ctx.shadowColor = 'rgba(255, 215, 0, 0.5)';
+            ctx.shadowBlur = 5;
             ctx.fillText(currentWishData.time, 500, 850);
+            ctx.shadowBlur = 0;
             
             // 底部装饰 - Lighthouse 标语
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.font = '16px Georgia, serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = 'italic 18px Georgia, serif';
             ctx.textAlign = 'center';
+            ctx.shadowColor = 'rgba(138, 43, 226, 0.5)';
+            ctx.shadowBlur = 10;
             ctx.fillText('Light up your life and career', 270, 890);
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 20px Georgia, serif';
             ctx.fillText('✨ Living Upward · 向上生活 ✨', 270, 920);
+            ctx.shadowBlur = 0;
             
             // 下载图片
             const link = document.createElement('a');
@@ -480,6 +780,85 @@
                 const y = Math.random() * height;
                 drawStar(ctx, x, y, 3, 6, 1.5);
             }
+            
+            // 添加彩色星星
+            const colors = ['rgba(138, 43, 226, 0.6)', 'rgba(65, 105, 225, 0.6)', 'rgba(255, 215, 0, 0.6)', 'rgba(255, 105, 180, 0.6)'];
+            for (let i = 0; i < 20; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+                drawStar(ctx, x, y, 4, 5, 2);
+            }
+        }
+        
+        // 绘制流星效果 - 新增函数
+        function drawShootingStars(ctx, width, height) {
+            // 定义多个流星，不同位置、角度和颜色
+            const shootingStars = [
+                { x: 100, y: 150, length: 80, angle: -45, color: 'rgba(255, 255, 255, 0.9)', width: 2 },
+                { x: 400, y: 250, length: 120, angle: -30, color: 'rgba(138, 43, 226, 0.8)', width: 2.5 },
+                { x: 50, y: 500, length: 100, angle: -50, color: 'rgba(65, 105, 225, 0.8)', width: 2 },
+                { x: 450, y: 600, length: 90, angle: -40, color: 'rgba(255, 215, 0, 0.7)', width: 1.8 },
+                { x: 200, y: 750, length: 110, angle: -35, color: 'rgba(255, 105, 180, 0.7)', width: 2.2 },
+                { x: 350, y: 400, length: 70, angle: -55, color: 'rgba(255, 255, 255, 0.6)', width: 1.5 },
+                { x: 480, y: 100, length: 60, angle: -42, color: 'rgba(100, 200, 255, 0.7)', width: 1.6 }
+            ];
+            
+            shootingStars.forEach(star => {
+                drawShootingStar(ctx, star.x, star.y, star.length, star.angle, star.color, star.width);
+            });
+        }
+        
+        // 绘制单个流星
+        function drawShootingStar(ctx, x, y, length, angle, color, lineWidth) {
+            ctx.save();
+            
+            // 转换角度为弧度
+            const angleRad = (angle * Math.PI) / 180;
+            const endX = x + Math.cos(angleRad) * length;
+            const endY = y + Math.sin(angleRad) * length;
+            
+            // 创建渐变效果
+            const gradient = ctx.createLinearGradient(x, y, endX, endY);
+            gradient.addColorStop(0, color);
+            gradient.addColorStop(0.3, color.replace(/[\d.]+\)$/, '0.5)'));
+            gradient.addColorStop(1, color.replace(/[\d.]+\)$/, '0)'));
+            
+            // 绘制流星主体
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+            
+            // 添加发光效果
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 10;
+            ctx.stroke();
+            
+            // 绘制流星头部（更亮的点）
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, lineWidth * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 添加尾部小光点
+            for (let i = 0; i < 5; i++) {
+                const ratio = i / 5;
+                const sparkX = x + Math.cos(angleRad) * length * ratio;
+                const sparkY = y + Math.sin(angleRad) * length * ratio;
+                const sparkSize = (1 - ratio) * lineWidth * 0.8;
+                
+                ctx.fillStyle = color.replace(/[\d.]+\)$/, `${0.6 - ratio * 0.6})`);
+                ctx.beginPath();
+                ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.restore();
         }
         
         // 绘制星形
