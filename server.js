@@ -444,12 +444,20 @@ app.get('/display', (req, res) => {
     res.sendFile(path.join(__dirname, 'display.html'));
 });
 
+app.get('/display2', (req, res) => {
+    res.sendFile(path.join(__dirname, 'display2.html'));
+});
+
 app.get('/qrcode', (req, res) => {
     res.sendFile(path.join(__dirname, 'qrcode.html'));
 });
 
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+app.get('/test-responsive', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-responsive.html'));
 });
 
 // 404处理
